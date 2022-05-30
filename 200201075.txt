@@ -1,0 +1,400 @@
+//Yangın Alarmı
+
+const int buzzerPin = 12;
+const int flamePin = 11;
+int Flame = HIGH;
+int redled = 3;
+int greenled = 4;
+void setup() 
+{
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(redled, OUTPUT);
+  pinMode(greenled, OUTPUT);
+
+  pinMode(flamePin, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() 
+{
+  Flame = digitalRead(flamePin);
+  if (Flame== LOW)
+  {
+    digitalWrite(buzzerPin, HIGH);
+    digitalWrite(redled, LOW);
+    digitalWrite(greenled, HIGH);
+  }
+  else
+  {
+    digitalWrite(buzzerPin, LOW);
+    digitalWrite(greenled, LOW);
+    digitalWrite(redled, HIGH);
+  }
+}
+
+
+
+//Hareket Sensorü
+
+int sensor = 8;
+boolean sensorValue = 0;
+int tetik = 7;
+
+
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(sensor, INPUT);
+  pinMode(tetik, OUTPUT);
+  Serial.println("Started...");
+  delay(10);
+
+}
+
+void loop() {
+ sensorValue = digitalRead(sensor);
+ Serial.println("Sensor Value="+String(sensorValue));
+ delay(100);
+
+ if(sensorValue == 1){
+  digitalWrite(tetik, HIGH); 
+ }
+ else
+ {
+  digitalWrite(tetik, LOW);
+ }
+
+}
+
+
+//Termometre Devresi
+
+#include<LiquidCrystal.h>
+
+LiquidCrystal lcd(2,3,4,5,6,7);
+float value;
+float milivolt;
+int temp;
+float temp2;
+int sayac = 0;
+void setup()
+{
+  lcd.begin(20,4);
+  lcd.setCursor(5,1);
+  lcd.print("HELLO SIR");
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(6,1);
+  lcd.print("WELCOME");
+  delay(1000);
+  lcd.clear();
+}
+void loop()
+{
+  value= analogRead(A1);
+  milivolt= (value*5000/1024);
+  temp = (milivolt/10);
+  
+  milivolt= (value*5000/1024);
+  temp2 = (milivolt/10);
+  
+  if(temp>=25 && temp<=30)
+  {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("TEMPERATURE =");
+  lcd.print(temp);
+  lcd.print(char(223));
+  lcd.print("C");
+  delay(500);
+  }
+  if(temp>20 && temp<=24)
+  {
+  temp=temp+1;
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("TEMPERATURE =");
+  lcd.print(temp);
+  lcd.print(char(223));
+  lcd.print("C");
+  delay(500);
+  }
+    if(temp == 20 && temp2<=20.50)
+  {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("TEMPERATURE =");
+  lcd.print(temp);
+  lcd.print(char(223));
+  lcd.print("C");
+  delay(500);
+  }
+      if(temp2>20.50 && temp2<=21.01)
+  {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("TEMPERATURE =");
+  lcd.print(temp+1);
+  lcd.print(char(223));
+  lcd.print("C");
+  delay(500);
+  }
+  if(temp<20)
+  {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  delay(450);
+  lcd.print("Temperature dropped!");
+  lcd.setCursor(0,2);
+  lcd.print("TEMPERATURE =");
+  lcd.print(temp);
+  lcd.print(char(223));
+  lcd.print("C");
+  delay(500);
+  }
+  
+  if(temp>30)
+  {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  delay(450);
+  lcd.print("Temperature rose!");
+  lcd.setCursor(0,2);
+  lcd.print("TEMPERATURE =");
+  lcd.print(temp);
+  lcd.print(char(223));
+  lcd.print("C");
+  delay(500);
+  }
+ }
+
+
+//Kapı Kilidi Devresi
+
+#include <Keypad.h>
+#include <LiquidCrystal.h>
+#include <Servo.h>
+
+Servo myservo;
+
+LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+
+#define Password_Lenght 5 // Give enough room for six chars + NULL char
+
+int pos = 0;    // variable to store the servo position
+
+char Data[Password_Lenght]; // 6 is the number of chars it can hold + the null char = 7
+char Master[Password_Lenght] = "0709";
+byte data_count = 0, master_count = 0;
+boolean Pass_is_good;
+char customKey;
+int redled = 11;
+int greenled = 12;
+
+const byte ROWS = 4;
+const byte COLS = 3;
+char keys[ROWS][COLS] = {
+  {'1', '2', '3'},
+  {'4', '5', '6'},
+  {'7', '8', '9'},
+  {'*', '0', '#'}
+};
+boolean door = true;
+
+byte rowPins[ROWS] = {1, 2, 3, 4}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {5, 6, 7}; //connect to the column pinouts of the keypad
+
+Keypad customKeypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS); //initialize an instance of class NewKeypad
+
+void setup()
+{
+  pinMode(redled, OUTPUT);
+pinMode(greenled, OUTPUT);
+  myservo.attach(9);
+  ServoClose();
+  lcd.begin(16, 2);
+  lcd.print(" Keypad Security");
+  lcd.setCursor(1, 1);
+  lcd.print("---Door lock---");
+  delay(1000);
+  lcd.clear();
+}
+
+void loop()
+{
+  if (door == 0)
+  {
+    customKey = customKeypad.getKey();
+    if (customKey == '*')
+
+    {
+      lcd.clear();
+      ServoClose();
+      lcd.print(" Door is closed");
+      delay(3000);
+      door = 1;
+    }
+  }
+  
+else Open();
+}
+
+void clearData()
+{
+  while (data_count != 0)
+  { // This can be used for any array size,
+    Data[data_count--] = 0; //clear array for new data
+  }
+  return;
+}
+
+void ServoOpen()
+{
+  for (pos = 180; pos >= 0; pos -= 5) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+}
+
+void ServoClose()
+{
+  for (pos = 0; pos <= 180; pos += 5) { // goes from 180 degrees to 0 degrees
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+}
+
+void Open()
+{
+  lcd.setCursor(0, 0);
+  lcd.print(" Enter Password");
+  
+  customKey = customKeypad.getKey();
+  if (customKey) // makes sure a key is actually pressed, equal to (customKey != NO_KEY)
+  {
+    Data[data_count] = customKey; // store char into data array
+    lcd.setCursor(data_count, 1); // move cursor to show each new char
+    lcd.print(Data[data_count]); // print char at said cursor
+    data_count++; // increment data array by 1 to store new char, also keep track of the number of chars entered
+  }
+
+
+  if (data_count == Password_Lenght - 1) // if the array index is equal to the number of expected chars, compare data to master
+  {
+    if (!strcmp(Data, Master)) // equal to (strcmp(Data, Master) == 0)
+    {
+      delay(500);
+      lcd.clear();
+      ServoOpen();
+      lcd.print("  Door is Open  ");
+      digitalWrite(redled, LOW);
+      digitalWrite(greenled, HIGH);
+      delay(1000);
+      door = 0;
+      counterbeep();
+      ServoClose();
+      clearData();
+      door = 1;
+
+    }
+    else
+    {
+      delay(500);
+      lcd.clear();
+      lcd.print(" Wrong Password ");
+      digitalWrite(greenled, LOW);
+      digitalWrite(redled, HIGH);
+      delay(1500);
+      digitalWrite(redled, LOW);
+      digitalWrite(greenled, LOW);
+      door = 1;
+    }
+    clearData();
+  }
+}
+void counterbeep()
+{
+delay(1200);
+
+ 
+ 
+lcd.clear();
+ 
+lcd.setCursor(2,15);
+lcd.println(" ");
+lcd.setCursor(2,14);
+lcd.println(" ");
+lcd.setCursor(2,0);
+delay(200);
+lcd.println("GET IN WITHIN:::");
+ 
+lcd.setCursor(4,1);
+lcd.print("5");
+delay(200);
+lcd.clear();
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+delay(1000);
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+lcd.setCursor(4,1); //2
+lcd.print("4");
+delay(100);
+lcd.clear();
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+delay(1000);
+
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+lcd.setCursor(4,1); 
+lcd.print("3");
+delay(100);
+lcd.clear();
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+delay(1000);
+
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+lcd.setCursor(4,1); 
+lcd.print("2");
+delay(100);
+lcd.clear();
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN:");
+delay(1000);
+
+lcd.setCursor(4,1);
+lcd.print("1");
+delay(100);
+lcd.clear();
+lcd.setCursor(2,0);
+lcd.println("GET IN WITHIN::");
+
+delay(1000);
+delay(40);
+lcd.clear();
+lcd.setCursor(2,0);
+lcd.print("RE-LOCKING");
+digitalWrite(redled, LOW);
+digitalWrite(greenled, LOW);
+delay(500);
+lcd.setCursor(12,0);
+lcd.print(".");
+delay(500);
+lcd.setCursor(13,0);
+lcd.print(".");
+delay(500);
+lcd.setCursor(14,0);
+lcd.print(".");
+delay(400);
+lcd.clear();
+lcd.setCursor(4,0);
+lcd.print("LOCKED!");
+delay(440);
+}
+
+
+//SON
